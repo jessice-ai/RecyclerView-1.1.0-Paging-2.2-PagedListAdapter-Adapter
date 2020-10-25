@@ -3,6 +3,7 @@ package com.example.sun8.data.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.paging.toLiveData
 import com.example.sun8.DataSource.SunDataSourceFactory
 import com.example.sun8.data.room.SunUser
@@ -12,7 +13,14 @@ import com.example.sun8.repository.SunRepository
 
 class MyViewModel(application: Application)  : AndroidViewModel(application) {
     //创建一个DataSource
-    val sunPageListData = SunDataSourceFactory(application).toLiveData(30)
+    private val sunfactory = SunDataSourceFactory(application)
+    val sunPageListData = sunfactory.toLiveData(30)
+
+    /**
+     * Transformations 从一个liveData 观察另一个Livedata，从一个livedata 生成另一个livedata
+     * Transformations 变形
+     */
+    val networkStatus = Transformations.switchMap(sunfactory.sun_DataSource,{it.networkStatus})
     var xun:Int = 1
     /**
      * 下拉刷新，重新加载
@@ -20,6 +28,10 @@ class MyViewModel(application: Application)  : AndroidViewModel(application) {
     fun resetquery(){
         //工厂重新生成一个DataSource对象
         sunPageListData.value?.dataSource?.invalidate()
+    }
+    fun sunretry(){
+        //invoke 呼叫，执行
+        sunfactory.sun_DataSource.value?.retry?.invoke()
     }
     /**
      * var allWords = MutableLiveData<List<SunUser>>()

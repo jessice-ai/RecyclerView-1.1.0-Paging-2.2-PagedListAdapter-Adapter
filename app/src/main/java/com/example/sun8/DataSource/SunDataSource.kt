@@ -1,6 +1,8 @@
 package com.example.sun8.DataSource
 
 import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 
 import androidx.paging.PageKeyedDataSource
 import com.example.sun8.data.remote.Animal
@@ -12,7 +14,16 @@ import com.github.kittinunf.fuel.Fuel
  * PageKeyedDataSource 两个参数，（第一个参数：页码 第二个参数，数据类型）
  * Hit 不是SunUser 是 animals.hits 所对用的类型
  */
+//枚举类
+enum class NetworkStatus{
+    LOADING,
+    FAILED,
+    COMPLETED
+}
 class SunDataSource(private val context: Context) : PageKeyedDataSource<Int, SunUser>() {
+    var retry : (()->Any)? = null
+    private val _networkstatus = MutableLiveData<NetworkStatus>()
+    val networkStatus : LiveData<NetworkStatus> = _networkstatus
     /**
      * loadInitial 加载起始时，运行
      */
@@ -20,6 +31,7 @@ class SunDataSource(private val context: Context) : PageKeyedDataSource<Int, Sun
         params: LoadInitialParams<Int>,
         callback: LoadInitialCallback<Int, SunUser>
     ) {
+        _networkstatus.postValue(NetworkStatus.LOADING)
         var xdikd = "";
         var names = arrayOf("flowers","tea","animal","plant","mountain");
         var vader = names.random()
@@ -28,6 +40,7 @@ class SunDataSource(private val context: Context) : PageKeyedDataSource<Int, Sun
                 val(animals, err) = result   //Kotlin 写法
                 //val animals = result.component1() //java写法
                 if (animals != null) {
+                    retry = null
                     /**
                      * 把远程数据，写入数据库
                      */
@@ -43,10 +56,13 @@ class SunDataSource(private val context: Context) : PageKeyedDataSource<Int, Sun
                     }
                     println("Jessice:第一页")
                 }else{
+                    //如果加载失败，保存下状态
+                    retry = {loadInitial(params, callback)}
+                    _networkstatus.postValue(NetworkStatus.FAILED)
                     /**
                      * 出错情况
                      */
-                    println("Jessice:出错了")
+                    //println("Jessice:断网了")
                 }
             }
     }
@@ -55,6 +71,7 @@ class SunDataSource(private val context: Context) : PageKeyedDataSource<Int, Sun
      * 往后一页
      */
     override fun loadAfter(params: LoadParams<Int>, callback: LoadCallback<Int, SunUser>) {
+        _networkstatus.postValue(NetworkStatus.LOADING)
         var xdikd = "";
         var names = arrayOf("flowers","tea","animal","plant","mountain");
         var vader = names.random()
@@ -63,6 +80,7 @@ class SunDataSource(private val context: Context) : PageKeyedDataSource<Int, Sun
                 val(animals, err) = result   //Kotlin 写法
                 //val animals = result.component1() //java写法
                 if (animals != null) {
+                    retry = null
                     /**
                      * 把远程数据，写入数据库
                      */
@@ -78,10 +96,13 @@ class SunDataSource(private val context: Context) : PageKeyedDataSource<Int, Sun
                     }
                     println("Jessice:第${params.key}页")
                 }else{
+                    //保存失败后的状态
+                    retry = {loadAfter(params, callback)}
                     /**
                      * 出错情况
                      */
-                    println("Jessice:出错了")
+                    _networkstatus.postValue(NetworkStatus.FAILED)
+                    //println("Jessice:出错了")
                 }
             }
     }

@@ -9,6 +9,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.sun8.DataSource.NetworkStatus
 import com.example.sun8.R
 import com.example.sun8.adapter.SunPageListAdapter
 import com.example.sun8.data.viewmodel.MyViewModel
@@ -82,6 +83,15 @@ class OneFragment : Fragment() {
                 println("Jessice:观察到数据发生变化，准备调用适配器")
                 adapterxd.submitList(it)
                 swipeRefresh.isRefreshing = false //数据加载完毕，关闭转动图标
+            }
+        })
+        /**
+         * 网络状态，给一个观察
+         */
+        sunMyViewModel.networkStatus.observe(viewLifecycleOwner, Observer {
+            println("Jessice网络状态："+it)
+            if(it== NetworkStatus.FAILED){
+                sunMyViewModel.sunretry()
             }
         })
         //sunMyViewModel.allWords.value?:sunMyViewModel.getmAllWords()

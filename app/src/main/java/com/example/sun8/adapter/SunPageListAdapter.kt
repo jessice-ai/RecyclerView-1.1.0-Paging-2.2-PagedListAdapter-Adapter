@@ -59,7 +59,7 @@ class SunPageListAdapter : PagedListAdapter<SunUser, SunPageListAdapter.SunMyVie
      */
     override fun onBindViewHolder(holder: SunMyViewHolder, position: Int) {
         //打印出所有的图片地址
-        println("Jessice:Picture----"+getItem(position)?.webformatURL)
+        //println("Jessice:Picture----"+getItem(position)?.webformatURL)
         //println("Jessice-Sun-onBindViewHolder————"+position);
         var imgUrl = getItem(position)?.webformatURL
         //给图片(占位符)设置一个高度
