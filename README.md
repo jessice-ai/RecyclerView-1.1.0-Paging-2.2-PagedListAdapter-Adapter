@@ -1,1 +1,3 @@
-# -RecyclerView-1.1.0-Paging-2.2-PagedListAdapter-Adapter-
+分页
+1、拉动到最下方，不显示加载条<br>
+
